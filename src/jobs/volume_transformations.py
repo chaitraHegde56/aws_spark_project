@@ -17,11 +17,10 @@ def extract_file_date(input_path):
         )
 
     date_str = match.group(1)
-
     return datetime.strptime(date_str, "%Y%m%d").strftime("%Y-%m-%d")
 
-def transform_data(spark, input_path, output_path):
 
+def transform_data(spark, input_path, output_path):
     """Read input, transform data and write to Delta table."""
 
     print(f"Reading input: {input_path}")
@@ -46,23 +45,12 @@ def transform_data(spark, input_path, output_path):
     if not DeltaTable.isDeltaTable(spark, output_path):
 
         print("Delta table does not exist. Performing initial load.")
-
-        (
-            df.write
-            .format("delta")
-            .mode("overwrite")
-            .partitionBy("file_date")
-            .save(output_path)
-        )
-
+        df.write.format("delta").mode("overwrite").partitionBy("file_date").save(output_path)
         print("Initial Delta load completed.")
 
     else:
-
         print("Delta table exists. Performing incremental MERGE.")
-
         delta_table = DeltaTable.forPath(spark, output_path)
-
         (
             delta_table.alias("target")
             .merge(
@@ -86,7 +74,7 @@ def main():
     parser.add_argument(
         "--input",
         required=True,
-        help="S3 path of the input filess"
+        help="S3 path of the input file"
     )
     parser.add_argument(
         "--output",
