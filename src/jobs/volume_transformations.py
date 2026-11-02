@@ -86,7 +86,7 @@ def main():
     parser.add_argument(
         "--input",
         required=True,
-        help="S3 path of the input file"
+        help="S3 path of the input files"
     )
     parser.add_argument(
         "--output",
