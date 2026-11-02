@@ -49,6 +49,7 @@ jobs:
 
       - name: Run unit tests
         run: |
+          export PYTHONPATH=$GITHUB_WORKSPACE
           pytest tests/ -v
 
 
