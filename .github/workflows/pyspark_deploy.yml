@@ -71,6 +71,17 @@ jobs:
       - name: Checkout GitHub repository
         uses: actions/checkout@v4
 
+      - name: Inspect OIDC claims
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const token = await core.getIDToken('sts.amazonaws.com');
+            const payload = JSON.parse(
+              Buffer.from(token.split('.')[1], 'base64url').toString()
+            );
+            console.log('Actual subject:', payload.sub);
+            console.log('Actual audience:', payload.aud);
+
       - name: Debug GitHub deployment context
         run: |
           echo "Repository: $GITHUB_REPOSITORY"
