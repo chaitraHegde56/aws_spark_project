@@ -42,7 +42,6 @@ jobs:
       - name: Install dependencies
         run: |
           pip install pytest
-          pip install -r requirements-test.txt
 
       - name: Validate Python syntax
         run: |
