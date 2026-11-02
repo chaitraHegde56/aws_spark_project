@@ -1,0 +1,84 @@
+
+name: PySpark Transformation CI/CD
+
+on:
+
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - 'src/jobs/volume_transformations.py'
+
+  push:
+    branches:
+      - develop
+    paths:
+      - 'src/jobs/volume_transformations.py'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+
+  # -------------------------
+  # CI - Test PySpark Code
+  # -------------------------
+
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout GitHub repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pytest
+          pip install -r requirements-test.txt
+
+      - name: Validate Python syntax
+        run: |
+          python -m py_compile src/jobs/volume_transformations.py
+
+      - name: Run unit tests
+        run: |
+          pytest tests/ -v
+
+
+  # -------------------------
+  # CD - Deploy to S3
+  # -------------------------
+
+  deploy:
+
+    needs: test
+
+    if: github.event_name == 'push'
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout GitHub repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ap-south-1
+
+      - name: Deploy PySpark file to S3
+        run: |
+
+          aws s3 cp \
+            src/jobs/volume_transformations.py \
+            s3://netapp-data-sample/spark_jobs/volume_transformations.py
